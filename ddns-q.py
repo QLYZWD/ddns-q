@@ -1,101 +1,47 @@
-import socket
-import netifaces
-import ipaddress
-import requests
-import json
-import flask
-# 调用腾讯云API Explorer
-from tencentcloud.common import credential
-from tencentcloud.common.profile.client_profile import ClientProfile
-from tencentcloud.common.profile.http_profile import HttpProfile
-from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
-from tencentcloud.dnspod.v20210323 import dnspod_client, models
 
 
-def get_ipv6_addresses():
-    ipv6_addresses = []
+import argparse
 
-    # 获取本机所有网络接口信息
-    interfaces = netifaces.interfaces()
+import config_func
+from DNS import dnspod
+from command import init, reset, start
 
-    # 遍历网络接口，查找IPv6地址
-    for interface in interfaces:
-        if_addresses = netifaces.ifaddresses(interface).get(socket.AF_INET6)
-        if if_addresses:
-            for if_address in if_addresses:
-                ipv6_address = if_address['addr']
-                if '%' in ipv6_address:
-                    # 去除接口标识符
-                    ipv6_address = ipv6_address.split('%')[0]
-                ipv6_addresses.append(ipv6_address)
-
-    return ipv6_addresses
+config_path = 'conf/ddns.conf'
 
 
-# 检测是否为公网ipv6
-def is_global_ipv6(ipv6_address):
-    ipv6 = ipaddress.ip_address(ipv6_address)
-    return ipv6.is_global
+# 解析命令
 
+# 创建解析器
+parser = argparse.ArgumentParser(description='ddns-q help')
+# 创建子命令解析器
+subparsers = parser.add_subparsers(dest='command', help='可用的命令')
+# init初始化命令
+init_parser = subparsers.add_parser("init", help="初始化ddns-q")
 
-def global_ipv6_api(ipv6_address):
-    return requests.get("https://v6.ident.me").text
+# reset重置命令
+reset_parser = subparsers.add_parser("reset", help="重置ddns-q")
 
+# list展示记录列表命令
+list_parser = subparsers.add_parser("list", help="列出当前域名的记录")
 
-def get_global_ipv6():
-    # 列出本机ipv6
-    ipv6_addresses = get_ipv6_addresses()
-    if ipv6_addresses:
-        print("检测本机IPv6地址:")
-        for address in ipv6_addresses:
-            print(address)
-    else:
-        print("No IPv6 addresses found.")
+# 启动命令
+start_parser = subparsers.add_parser("start", help="开始运行脚本")
+start_parser.add_argument("--subdomain", "-s", default="@", help="主机记录(例如@,www,默认为@)")
+start_parser.add_argument("--time", "-t", default="10", help="检查ipv6间隔，默认为10s")
 
-    # 筛选公网ip
-    for address in ipv6_addresses:
-        if is_global_ipv6(address) and global_ipv6_api(address) == address:
-            print("\n" + address + "为公网IP\n")
-            return address
+# 解析命令行参数
+args = parser.parse_args()
 
-
-# 请求记录列表
-def get_record_list(domain, secretId, secretKey):
-    try:
-        # 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密 代码泄露可能会导致 SecretId 和 SecretKey
-        # 泄露，并威胁账号下所有资源的安全性。以下代码示例仅供参考，建议采用更安全的方式来使用密钥，请参见：https://cloud.tencent.com/document/product/1278/85305
-        # 密钥可前往官网控制台 https://console.cloud.tencent.com/cam/capi 进行获取
-        cred = credential.Credential(secretId, secretKey)
-        # 实例化一个http选项，可选的，没有特殊需求可以跳过
-        httpProfile = HttpProfile()
-        httpProfile.endpoint = "dnspod.tencentcloudapi.com"
-
-        # 实例化一个client选项，可选的，没有特殊需求可以跳过
-        clientProfile = ClientProfile()
-        clientProfile.httpProfile = httpProfile
-        # 实例化要请求产品的client对象,clientProfile是可选的
-        client = dnspod_client.DnspodClient(cred, "", clientProfile)
-
-        # 实例化一个请求对象,每个接口都会对应一个request对象
-        req = models.DescribeRecordListRequest()
-        params = {
-            "Domain": domain
-        }
-        req.from_json_string(json.dumps(params))
-
-        # 返回的resp是一个DescribeRecordListResponse的实例，与请求对象对应
-        resp = client.DescribeRecordList(req)
-        # 输出json格式的字符串回包
-        print(resp.to_json_string())
-
-    except TencentCloudSDKException as err:
-        print(err)
-
-
-
-
-
-
-if __name__ == "__main__":
-    ipv6_global = get_global_ipv6()
-    get_record_list()
+# 处理命令
+if args.command == 'init':
+    print("开始初始化ddns-q")
+    init.init()
+elif args.command == 'reset':
+    reset.reset()
+    print("已重置ddns-q")
+elif args.command == 'list':
+    config = config_func.read_config(config_path)
+    if config['dns'] == 'dnspod':
+        dnspod.dnspod_get_record_list(config['domain'], config['secretid'], config['secretkey'])
+elif args.command == 'start':
+    start.start(args.subdomain, args.time)
