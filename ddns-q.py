@@ -4,7 +4,7 @@ import argparse
 
 import config_func
 from DNS import dnspod
-from command import init, reset, start
+from command import init, reset, start, set
 
 config_path = 'conf/ddns.conf'
 
@@ -27,7 +27,12 @@ list_parser = subparsers.add_parser("list", help="列出当前域名的记录")
 # 启动命令
 start_parser = subparsers.add_parser("start", help="开始运行脚本")
 start_parser.add_argument("--subdomain", "-s", default="@", help="主机记录(例如@,www,默认为@)")
-start_parser.add_argument("--time", "-t", default="10", help="检查ipv6间隔，默认为10s")
+start_parser.add_argument("--time", "-t", default="30", help="检查ipv6间隔，默认为30s")
+
+# set设定命令
+set_parser = subparsers.add_parser("set", help="设置配置(例如ddns-q set dns dnspod)")
+set_parser.add_argument("key", help="配置项")
+set_parser.add_argument("value", help="配置值")
 
 # 解析命令行参数
 args = parser.parse_args()
@@ -45,3 +50,5 @@ elif args.command == 'list':
         dnspod.dnspod_get_record_list(config['domain'], config['secretid'], config['secretkey'])
 elif args.command == 'start':
     start.start(args.subdomain, args.time)
+elif args.command == 'set':
+    set.set(args.key, args.value)

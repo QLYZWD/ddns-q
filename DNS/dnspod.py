@@ -110,7 +110,7 @@ def dnspod_add_record(Domain, SecretId, SecretKey, Value, SubDomain='@', RecordT
         resp = client.CreateRecord(req)
         # 输出json格式的字符串回包
         print(resp.to_json_string())
-
+        return resp
     except TencentCloudSDKException as err:
         print(err)
 

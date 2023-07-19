@@ -46,5 +46,5 @@ def get_global_ipv6():
     # 筛选公网ip
     for address in ipv6_addresses:
         if is_global_ipv6(address) and global_ipv6_api(address) == address:
-            print(address + "为公网IP")
+            print(address + "为公网IP  ", end='')
             return address
