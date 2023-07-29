@@ -1,4 +1,5 @@
 conf/
 dist/
 build/
+dist/
 .history/
