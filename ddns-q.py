@@ -3,8 +3,8 @@
 import argparse
 
 import config_func
-from DNS import dnspod
-from command import init, reset, start, set, startup
+from DNS import dnspod, dynv6
+from command import init, reset, start, set, startup, ipv6
 
 config_path = 'conf/ddns.conf'
 
@@ -39,6 +39,9 @@ startup_parser = subparsers.add_parser("startup", help="设置开机自启")
 startup_parser.add_argument("--subdomain", "-s", default="@", help="主机记录(例如@,www,默认为@)")
 startup_parser.add_argument("--time", "-t", default="30", help="检查ipv6间隔，默认为30s")
 
+# ipv6获取命令
+ipv6_parser = subparsers.add_parser("ipv6", help="获取本机ipv6")
+
 # 解析命令行参数
 args = parser.parse_args()
 
@@ -54,9 +57,14 @@ elif args.command == 'list':
     config = config_func.read_config(config_path)
     if config['dns'] == 'dnspod':
         dnspod.dnspod_get_record_list(config['domain'], config['secretid'], config['secretkey'])
+    elif config['dns'] == 'dynv6':
+        dynv6.get_list_record(config['domain'], config['api_token_dynv6'])
+
 elif args.command == 'start':
     start.start(args.subdomain, args.time)
 elif args.command == 'set':
     set.set(args.key, args.value)
 elif args.command == 'startup':
     startup.startup('start -s '+args.subdomain+' -t '+args.time)
+elif args.command == 'ipv6':
+    ipv6.get_global_ipv6()

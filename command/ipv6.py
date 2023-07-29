@@ -31,7 +31,7 @@ def is_global_ipv6(ipv6_address):
     return ipv6.is_global
 
 
-def global_ipv6_api(ipv6_address):
+def global_ipv6_api():
     return requests.get("https://v6.ident.me").text
 
 
@@ -45,6 +45,6 @@ def get_global_ipv6():
 
     # 筛选公网ip
     for address in ipv6_addresses:
-        if is_global_ipv6(address) and global_ipv6_api(address) == address:
+        if is_global_ipv6(address) and global_ipv6_api() == address:
             print(address + "为公网IP  ", end='')
             return address

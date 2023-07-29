@@ -5,6 +5,8 @@ from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.dnspod.v20210323 import dnspod_client, models
 import json
+import pandas as pd
+
 
 
 def dnspod_get_record_list(domain, secretId, secretKey):
@@ -34,10 +36,19 @@ def dnspod_get_record_list(domain, secretId, secretKey):
         resp = client.DescribeRecordList(req)
 
         # 输出记录列表
+        # 将RecordListItem对象转换为字典并去掉前缀_
+        data = [{key[1:]: value for key, value in item.__dict__.items()} for item in resp.RecordList]
+
+        print(data)
+        print(pd.DataFrame(data))
+
+        '''
         print('%-4s%-6s%-4s%-6s%-40s%-15s' % ("记录", "类型", "线路", "TTL", "记录值", "最后更新时间"))
         for record in resp.RecordList:
             if record.Type != "NS":
                 print('%-5s%-8s%-4s%-6s%-40s%-15s' % (record.Name, record.Type, record.Line, record.TTL, record.Value, record.UpdatedOn))
+                
+        '''
         return resp
     except TencentCloudSDKException as err:
         print(err)

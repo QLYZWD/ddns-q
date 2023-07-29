@@ -1,4 +1,4 @@
-from DNS import dnspod
+from DNS import dnspod, dynv6
 import config_func
 from time import sleep
 from command import ipv6, reset
@@ -27,7 +27,6 @@ def start(subdomain, time):
     value = ipv6.get_global_ipv6()
     recordid = 0
     if config['dns'] == 'dnspod':
-
         for record in dnspod.dnspod_get_record_list_noprint(config['domain'], config['secretid'], config['secretkey']).RecordList:
             if record.Name == subdomain and record.Type == 'AAAA':
                 print('已存在该记录')
@@ -38,7 +37,10 @@ def start(subdomain, time):
                 continue
         if recordid == 0:
             print('不存在该记录，创建新记录')
-            recordid = dnspod.dnspod_add_record(config['domain'], config['secretid'], config['secretkey'], value,subdomain).RecordId
+            recordid = dnspod.dnspod_add_record(config['domain'], config['secretid'], config['secretkey'], value, subdomain).RecordId
+    elif config['dns'] == 'dynv6':
+        dynv6.add_record(subdomain, config['api_token_dynv6'], config['domain'], value)
+
 
     while 1:
         value_tmp = ipv6.get_global_ipv6()
@@ -47,6 +49,8 @@ def start(subdomain, time):
             value = value_tmp
             if config['dns'] == 'dnspod':
                 dnspod.dnspod_change_record(config['domain'], config['secretid'], config['secretkey'], recordid, value, subdomain)
+            elif config['dns'] == 'dynv6':
+                dynv6.add_record(subdomain, config['api_token_dynv6'], config['domain'], value)
         else:
             print("未改变")
         sleep(int(time))
