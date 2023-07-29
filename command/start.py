@@ -1,7 +1,7 @@
 from DNS import dnspod
 import config_func
 from time import sleep
-from command import ipv6
+from command import ipv6, reset
 import os
 
 
@@ -10,8 +10,13 @@ def start(subdomain, time):
         file = open('conf/ddns.conf', 'r')
         file.close()
     except FileNotFoundError:
-        os.mkdir('conf')
-        os.system('touch ddns.conf')
+        try:
+            os.mkdir('conf')
+        except FileExistsError:
+            pass
+        finally:
+            os.system('echo # ddns-conf>conf/ddns.conf')
+            reset.reset()
 
     config = config_func.read_config('conf/ddns.conf')
     for key, value in config.items():

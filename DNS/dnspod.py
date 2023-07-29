@@ -32,11 +32,8 @@ def dnspod_get_record_list(domain, secretId, secretKey):
 
         # 返回的resp是一个DescribeRecordListResponse的实例，与请求对象对应
         resp = client.DescribeRecordList(req)
-        # 输出json格式的字符串回包
-        print(resp.to_json_string())
 
         # 输出记录列表
-
         print('%-4s%-6s%-4s%-6s%-40s%-15s' % ("记录", "类型", "线路", "TTL", "记录值", "最后更新时间"))
         for record in resp.RecordList:
             if record.Type != "NS":

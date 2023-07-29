@@ -4,7 +4,7 @@ import argparse
 
 import config_func
 from DNS import dnspod
-from command import init, reset, start, set
+from command import init, reset, start, set, startup
 
 config_path = 'conf/ddns.conf'
 
@@ -34,8 +34,14 @@ set_parser = subparsers.add_parser("set", help="设置配置(例如ddns-q set dn
 set_parser.add_argument("key", help="配置项")
 set_parser.add_argument("value", help="配置值")
 
+# startup开机自启命令
+startup_parser = subparsers.add_parser("startup", help="设置开机自启")
+startup_parser.add_argument("--subdomain", "-s", default="@", help="主机记录(例如@,www,默认为@)")
+startup_parser.add_argument("--time", "-t", default="30", help="检查ipv6间隔，默认为30s")
+
 # 解析命令行参数
 args = parser.parse_args()
+
 
 # 处理命令
 if args.command == 'init':
@@ -52,3 +58,5 @@ elif args.command == 'start':
     start.start(args.subdomain, args.time)
 elif args.command == 'set':
     set.set(args.key, args.value)
+elif args.command == 'startup':
+    startup.startup('start -s '+args.subdomain+' -t '+args.time)
