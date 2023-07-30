@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from config_func import modify_config, read_config, read_config_value
 
 path = 'conf/ddns.conf'

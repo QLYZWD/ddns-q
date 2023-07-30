@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from dotenv import dotenv_values, set_key
 def modify_config(file_path, target_option, new_value):
     config = dotenv_values(file_path)

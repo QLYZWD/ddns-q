@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # 调用腾讯云API Explorer
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile

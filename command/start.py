@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from DNS import dnspod, dynv6
 import config_func
 from time import sleep
